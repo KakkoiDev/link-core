@@ -15,13 +15,13 @@ export type OpenedLink<T extends object = Record<string, unknown>> = T & { v: 1;
 
 export declare function sealLink(
   payload: object,
-  options: { app: string; days?: number; now?: number },
+  options: { app: string; days?: number; now?: number; compress?: boolean },
 ): Promise<{ token: string; code: string }>;
 
 export declare function openLink<T extends object = Record<string, unknown>>(
   token: string,
   code: string,
-  options: { app: string; now?: number; accept?: (body: OpenedLink<T>) => boolean },
+  options: { app: string; previousApps?: string[]; now?: number; accept?: (body: OpenedLink<T>) => boolean },
 ): Promise<OpenedLink<T>>;
 
 export declare function readLinkToken(hash?: string, name?: string): string | null;

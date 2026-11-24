@@ -1,0 +1,125 @@
+[
+  {
+    "name": "invite, no expiry",
+    "app": "echo-ai-key-v1",
+    "code": "0123-4567-89AB",
+    "salt": "000102030405060708090a0b0c0d0e0f",
+    "iv": "101112131415161718191a1b",
+    "plaintext": "7b2270726f7669646572223a226f70656e6169222c226b6579223a22736b2d74657374222c2276223a317d",
+    "token": "v1.AAECAwQFBgcICQoLDA0ODw.EBESExQVFhcYGRob.xXtISjyzXpfUjjVoxkQKe7X2frUFLBEiObxPSfTniyupkFPNJzdFESxBjSmU7ZEA7ul76CODm_8p4DE",
+    "body": {
+      "provider": "openai",
+      "key": "sk-test",
+      "v": 1
+    },
+    "otherApp": "minihongo-kaiwa-key-v1"
+  },
+  {
+    "name": "device link with expiry",
+    "app": "echo-ai-key-v1",
+    "code": "CDEF-GHJK-MNPQ",
+    "salt": "6465666768696a6b6c6d6e6f70717273",
+    "iv": "c8c9cacbcccdcecfd0d1d2d3",
+    "plaintext": "7b2273796e63223a7b22746f6b656e223a226768705f74657374222c2267697374223a2268747470733a2f2f676973742e6769746875622e636f6d2f752f3036363738393165313966386634363865303336326365323263386332356633227d2c2276223a312c22657870223a313736373232353630303030307d",
+    "token": "v1.ZGVmZ2hpamtsbW5vcHFycw.yMnKy8zNzs_Q0dLT.6mppsipy7M2qIIg0qppJyZyNImoV8bPnljNrJ5rXQ30fTgJJ7NySzfwIgSov5Vo6Wp71qpXSrs2Y_tVkuF910l8yw3IZ01V-lxsSCyltYqeKAcT0lDsKis-iwyflAK0HSLZm7A_H2DYyv69cPDVuSOOUSgvKpSSGSxUQjypWhZMXWbevgU00YjbGBg",
+    "body": {
+      "sync": {
+        "token": "ghp_test",
+        "gist": "https://gist.github.com/u/0667891e19f8f468e0362ce22c8c25f3"
+      },
+      "v": 1,
+      "exp": 1767225600000
+    },
+    "now": 1767139200000
+  },
+  {
+    "name": "UTF-8 payload, another app",
+    "app": "minihongo-kaiwa-key-v1",
+    "code": "RSTV-WXYZ-0000",
+    "salt": "f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
+    "iv": "0708090a0b0c0d0e0f101112",
+    "plaintext": "7b2270726f7669646572223a22676f6f676c65222c226b6579223a22672d74657374222c226e6f7465223a22e697a5e69cace8aa9ee381aee383a1e383a2222c2276223a317d",
+    "token": "v1.8PHy8_T19vf4-fr7_P3-_w.BwgJCgsMDQ4PEBES.JiwBh_BI7-XNv5UadVqlkIEvd7FvgFQesMQ-7Kxm4eEWaQQysC_W17AuOf9XYhiNMqEcVGrgswJOYJndArJFlOu5ppa9vWBCjw22GTBIMic9CQOJHuA",
+    "body": {
+      "provider": "google",
+      "key": "g-test",
+      "note": "日本語のメモ",
+      "v": 1
+    },
+    "otherApp": "echo-ai-key-v1"
+  },
+  {
+    "name": "deflated body",
+    "app": "example-app-v1",
+    "code": "7K2M-QX9D-4HTB",
+    "salt": "32333435363738393a3b3c3d3e3f4041",
+    "iv": "3c3d3e3f4041424344454647",
+    "plaintext": "00ab56ca2c49cd2d56b28aae56ca4c51b232d051cacecc033294522b12730b7252957494f2b395ac4a8a4a536b75206a0c89506344841a6322d49810a1c69408356644a83127428d05116a2c890943a2021a6f48c7ea289501d5d40200",
+    "token": "v1.MjM0NTY3ODk6Ozw9Pj9AQQ.PD0-P0BBQkNERUZH.3eGa5zBcFw2_K5IXJISkgzATG8n60JUne9b4VGaTuIlr8Bs90r-3MuS1frrFDDh4Ctd2O7istb73eB04eWD3cOvIcVZTBvsjm-aCrdhzm7a0_2f5OReZ4QcMIGe6VkVMVs4UIkzDRo4_Xed3HQ",
+    "body": {
+      "items": [
+        {
+          "id": 0,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 1,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 4,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 5,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 6,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 7,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 8,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 9,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 10,
+          "kind": "example",
+          "ok": true
+        },
+        {
+          "id": 11,
+          "kind": "example",
+          "ok": true
+        }
+      ],
+      "v": 1
+    }
+  }
+]

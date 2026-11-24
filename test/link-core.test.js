@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {sealLink, openLink, readLinkToken, forgetLinkToken, makeUnlockCode, normalizeUnlockCode, LinkError, LINK_VERSION} from "../link-core.js";
 
 const APP = "echo-ai-key-v1";
@@ -106,4 +107,71 @@ test("links sealed by Echo's and Minihongo's earlier copies still open", async (
   const mini = await openLink(FIXTURES.minihongo.token, FIXTURES.minihongo.code, {app: FIXTURES.minihongo.app});
   assert.deepEqual(mini, {provider: "google", key: "mh-fixture", v: 1});
   await assert.rejects(openLink(FIXTURES.minihongo.token, FIXTURES.minihongo.code, {app: "echo-ai-key-v1"}), refused("wrong-code"));
+});
+
+test("a renamed app still opens links sealed under its previous ids", async () => {
+  const {token, code} = await sealLink({provider: "google", key: "g"}, {app: "kaiwa-key-v1"});
+  const body = await openLink(token, code, {app: "minihongo-kaiwa-key-v2", previousApps: ["kaiwa-key-v0", "kaiwa-key-v1"]});
+  assert.equal(body.key, "g");
+  await assert.rejects(openLink(token, code, {app: "minihongo-kaiwa-key-v2", previousApps: ["echo-ai-key-v1"]}), refused("wrong-code"), "unrelated ids still fail");
+  await assert.rejects(openLink(token, "0000-0000-0000", {app: "minihongo-kaiwa-key-v2", previousApps: ["kaiwa-key-v1"]}), refused("wrong-code"), "the right binding with a wrong code still fails");
+  await assert.rejects(openLink(token, code, {app: "x", previousApps: [""]}), TypeError);
+});
+
+test("a body that compresses well is deflated, and still opens", async () => {
+  const big = {sync: {token: "ghp_" + "a1b2".repeat(10), gist: "https://gist.github.com/someone/0667891e19f8f468e0362ce22c8c25f3"}, note: "the same words again and again ".repeat(20)};
+  const packed = await sealLink(big, {app: APP});
+  const plain = await sealLink(big, {app: APP, compress: false});
+  assert.ok(packed.token.length < plain.token.length / 3, `${packed.token.length} vs ${plain.token.length}`);
+  assert.deepEqual(await openLink(packed.token, packed.code, {app: APP}), {...big, v: 1});
+  assert.deepEqual(await openLink(plain.token, plain.code, {app: APP}), {...big, v: 1});
+});
+
+test("a body that would not shrink is sealed as plain JSON, the v0.1 format", async () => {
+  const {token, code} = await sealLink({k: "x"}, {app: APP});
+  const plain = await openRaw(token, code, APP);
+  assert.equal(plain[0], 0x7b, "starts with '{'");
+});
+
+test("a deflated body that inflates past 64 KiB is refused", async () => {
+  const bomb = await deflateRaw(new TextEncoder().encode(JSON.stringify({pad: "x".repeat(70000)})));
+  const token = await specSeal(Uint8Array.of(0, ...bomb), {app: APP, code: "0000-0000-0001", salt: new Uint8Array(16), iv: new Uint8Array(12)});
+  await assert.rejects(openLink(token, "0000-0000-0001", {app: APP}), refused("malformed"));
+});
+
+// An independent implementation of SPEC.md, written from the spec and not
+// from link-core.js. The published vectors must agree with it and with
+// link-core; the plain-JSON ones must be reproduced byte for byte.
+const enc = new TextEncoder();
+const b64u = bytes => Buffer.from(bytes).toString("base64url");
+async function specKey(code, salt) {
+  const normal = code.toUpperCase().replace(/[^0-9A-Z]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+  const base = await crypto.subtle.importKey("raw", enc.encode(normal), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name: "PBKDF2", hash: "SHA-256", salt, iterations: 600000}, base, {name: "AES-GCM", length: 256}, false, ["encrypt", "decrypt"]);
+}
+async function specSeal(plain, {app, code, salt, iv}) {
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name: "AES-GCM", iv, additionalData: enc.encode(app)}, await specKey(code, salt), plain));
+  return ["v1", b64u(salt), b64u(iv), b64u(ct)].join(".");
+}
+async function openRaw(token, code, app) {
+  const [, salt, iv, ct] = token.split(".").map(part => Buffer.from(part, "base64url"));
+  return new Uint8Array(await crypto.subtle.decrypt({name: "AES-GCM", iv, additionalData: enc.encode(app)}, await specKey(code, salt), ct));
+}
+async function deflateRaw(bytes) {
+  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer());
+}
+
+const vectors = JSON.parse(readFileSync(new URL("./vectors.json", import.meta.url), "utf8"));
+
+test("the published test vectors (SPEC.md) hold", async () => {
+  assert.ok(vectors.length >= 4);
+  for (const vector of vectors) {
+    const hex = h => Uint8Array.from(Buffer.from(h, "hex"));
+    const opened = await openLink(vector.token, vector.code, {app: vector.app, now: vector.now ?? 0});
+    assert.deepEqual(opened, vector.body, vector.name);
+    const plain = await openRaw(vector.token, vector.code, vector.app);
+    assert.equal(Buffer.from(plain).toString("hex"), vector.plaintext, vector.name + ": plaintext bytes");
+    assert.equal(await specSeal(plain, {app: vector.app, code: vector.code, salt: hex(vector.salt), iv: hex(vector.iv)}), vector.token, vector.name + ": token reproduced");
+    if (vector.otherApp) await assert.rejects(openLink(vector.token, vector.code, {app: vector.otherApp}), refused("wrong-code"));
+  }
 });
