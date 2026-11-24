@@ -1,0 +1,21 @@
+{
+  "name": "@kakkoidev/link-core",
+  "version": "0.1.0",
+  "description": "Put a secret in a link with no server: PBKDF2 + AES-GCM sealed payload in the #fragment, opened with a short unlock code.",
+  "type": "module",
+  "main": "./link-core.js",
+  "exports": {
+    ".": "./link-core.js",
+    "./package.json": "./package.json"
+  },
+  "types": "./link-core.d.ts",
+  "files": ["link-core.js", "link-core.d.ts", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check link-core.js"
+  },
+  "license": "MIT"
+}
